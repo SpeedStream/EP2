@@ -8,3 +8,9 @@ client:
 
 clean:
 	rm -rf *o cliente servidor cliPipe
+
+git:
+	$ git add .
+	$ git add -A
+	$ git commit -m 'Version Final'
+	$ git push origin master
