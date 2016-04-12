@@ -133,7 +133,7 @@ void waitFor(unsigned int);
         }
         else{
             //Proceso Padre
-            printf("Cliente -> Padre\n");
+            //printf("Cliente -> Padre\n");
            	int j = 0;
             signal(SIGINT, signalFunc);        //Señal de interrupción -> Ctrl+C
            	do {
