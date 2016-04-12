@@ -27,58 +27,44 @@ void waitFor(unsigned int);
     char buff[MAX_BUF];
     int portno, n;
  
-     struct sockaddr_in serv_addr;
-     struct hostent *server;
- 
-     char buffer[256];
-     if (argc < 3)
-     {
-        fprintf(stderr,"usage %s hostname port\n", argv[0]);
-        exit(0);
-     }
+	struct sockaddr_in serv_addr;
+	struct hostent *server;
 
-     portno = atoi(argv[2]);
-     cltSocket = socket(AF_INET, SOCK_STREAM, 0);
-     if (cltSocket < 0) 
-         error("ERROR opening socket");
-     server = gethostbyname(argv[1]);
+	char buffer[256];
+	if (argc < 3) {
+		fprintf(stderr,"usage %s hostname port\n", argv[0]);
+		exit(0);
+	}
 
-     if (server == NULL) 
-     {
-         fprintf(stderr,"ERROR, no such host\n");
-         exit(0);
-     }
+	portno = atoi(argv[2]);
+	cltSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (cltSocket < 0)
+		error("ERROR opening socket");
+	server = gethostbyname(argv[1]);
 
-     bzero((char *) &serv_addr, sizeof(serv_addr));
-     serv_addr.sin_family = AF_INET;
-     bcopy((char *)server->h_addr, (char *)&serv_addr.sin_addr.s_addr, server->h_length);
-     serv_addr.sin_port = htons(portno);
-     if (connect(cltSocket,(struct sockaddr *)&serv_addr,sizeof(serv_addr)) < 0) 
-         error("ERROR connecting");
+	if (server == NULL) {
+		fprintf(stderr,"ERROR, no such host\n");
+		exit(0);
+	}
 
-    /*
-    char* arg_list[] = {
-    	"display",
-    	"0.jpg",
-    	NULL
-    };
-    */
+	bzero((char *) &serv_addr, sizeof(serv_addr));
+	serv_addr.sin_family = AF_INET;
+	bcopy((char *)server->h_addr, (char *)&serv_addr.sin_addr.s_addr, server->h_length);
+	serv_addr.sin_port = htons(portno);
+	if (connect(cltSocket,(struct sockaddr *)&serv_addr,sizeof(serv_addr)) < 0) 
+		error("ERROR connecting");
 
     /*
     Padre -- fork --> Hijo => Pantalla inicio
         |--- fork --> Hijo2=> Lee socket --> Escribe en pipe
         |------------------=> Lee pipe   --> Imprime en pantalla
     */
-     int init = 0;
-     
-     pid_t child_pid;
-     child_pid = fork ();
-     int a = (int) getpid ();
+	int init = 0;
+	pid_t child_pid;
+	child_pid = fork ();
     if (child_pid == 0) {
         //Proceso Hijo1
-     	int b = (int) getpid ();
-        printf("Ciente -> Hijo1\n");
-     	//execvp("display", arg_list); 
+        //printf("Ciente -> Hijo1\n");
     }
     else {
         //Proceso Hijo2
@@ -86,10 +72,11 @@ void waitFor(unsigned int);
         child_pid = fork ();
         if(child_pid==0){
             //Proceso Hijo2. Escribirá al pipe cuando reciba en el socket
-        	printf("Cliente -> Hijo2\n");
+        	//printf("Cliente -> Hijo2\n");
         	int i = 0;
             signal(SIGINT, signalFunc);        //Señal de interrupción -> Ctrl+C
-            do{ 
+            do{
+            	printf("Leyendo socket...\n");
                 bzero(buffer,256);
                 n = read(cltSocket,buffer,255);                 //Leemos socket de cliente y guardamos en buffer
                 clientPipe = open(cltPipe, O_WRONLY);     //Abrimos pipe
@@ -98,8 +85,9 @@ void waitFor(unsigned int);
                         Dependiendo del valor correspondiente en buffer, escribiremos en el dato en el pipe write_clientPipe
                         Leemos socket -> Escribimos en pipe -> Cerramos pipe
                     */
+                    printf("Escribiendo en pipe...\n");
                     case '0':
-                    	if(i>1){ write(clientPipe, "0", sizeof("0")); }
+                    	if(i>1){ write(clientPipe, "0", sizeof("0"));}
                     	else   { i++; }
                         break;
                     case '1':
@@ -139,6 +127,7 @@ void waitFor(unsigned int);
                         else    { i++; }
                         break;
                 }
+                printf("Cerrando pipe\n");
                 close(clientPipe);
             }while (endHijo==0);
         }
@@ -147,7 +136,8 @@ void waitFor(unsigned int);
             printf("Cliente -> Padre\n");
            	int j = 0;
             signal(SIGINT, signalFunc);        //Señal de interrupción -> Ctrl+C
-           	do { 
+           	do {
+           		printf("Leyendo en pipe...\n");
                 clientPipe = open(cltPipe, O_RDONLY);       //Abrimos pipe
                 read(clientPipe, buff, MAX_BUF);            //Leemos pipe
                 char a = buff[0];                                //Amacenamos en biffer
@@ -156,6 +146,7 @@ void waitFor(unsigned int);
                         Dependiendo del valor correspondiente en el pipe clientPipe, mostramos la imagen correspondiente
                         Leemos pipe -> Seleccionamos imagen -> Cerramos pipe
                     */
+                    printf("Mostrando imagen...\n");
                     case '0':
                       	if(j>1) { system("display -remote 0.jpg"); }
                         else    { j++; }
@@ -197,6 +188,7 @@ void waitFor(unsigned int);
                         else    { j++; }
                         break;
                     }
+                    printf("Cerrando pipe...\n");
                     close(clientPipe);
                 }while (endPadre==0);
             }

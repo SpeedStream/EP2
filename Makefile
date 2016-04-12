@@ -12,5 +12,5 @@ clean:
 git:
 	$ git add .
 	$ git add -A
-	$ git commit -m 'Version Final'
+	$ git commit -m 'Version final'
 	$ git push origin master
