@@ -25,7 +25,7 @@ void waitFor(unsigned int);
     char * cltPipe = "cliPipe";
     mkfifo(cltPipe, 0666);
     char buff[MAX_BUF];
-    int portno, n;
+    int portno;
  
 	struct sockaddr_in serv_addr;
 	struct hostent *server;
@@ -38,8 +38,9 @@ void waitFor(unsigned int);
 
 	portno = atoi(argv[2]);
 	cltSocket = socket(AF_INET, SOCK_STREAM, 0);
-	if (cltSocket < 0)
+	if (cltSocket < 0){
 		error("ERROR opening socket");
+    }
 	server = gethostbyname(argv[1]);
 
 	if (server == NULL) {
@@ -70,7 +71,7 @@ void waitFor(unsigned int);
         do{
         	printf("Leyendo socket...\n");
             bzero(buffer,256);
-            n = read(cltSocket,buffer,255);                 //Leemos socket de cliente y guardamos en buffer
+            read(cltSocket,buffer,255);                 //Leemos socket de cliente y guardamos en buffer
             clientPipe = open(cltPipe, O_WRONLY);     //Abrimos pipe
             switch(buffer[0]){
                 /*

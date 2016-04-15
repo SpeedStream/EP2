@@ -12,5 +12,5 @@ clean:
 git:
 	$ git add .
 	$ git add -A
-	$ git commit -m 'Version 4.1'
+	$ git commit -m 'Version 5.0'
 	$ git push origin master
