@@ -198,9 +198,9 @@ void waitFor(unsigned int);
 void signalFunc(int sig) {
     printf("Ending\n");
     close(cltSocket);
-    exit(1);
     endHijo++;
     endPadre++;
+    exit(1);
 }
 
 void error(char *msg) {
